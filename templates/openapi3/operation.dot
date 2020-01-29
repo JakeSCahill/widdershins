@@ -1,6 +1,4 @@
-{{= data.tags.section }}
-
-## {{= data.operationUniqueName}}
+## {{= data.method.verb.toUpperCase()}} {{=data.method.path}}
 
 {{? data.operation.operationId}}
 <a id="opId{{=data.operation.operationId}}"></a>
@@ -15,23 +13,15 @@
 {{ data.utils.mergePathParameters(data); }}
 {{ data.utils.getParameters(data); }}
 
-{{? data.options.codeSamples || data.operation["x-code-samples"] }}
-> Code samples
-
-{{= data.utils.getCodeSamples(data) }}
-{{?}}
-
-`{{= data.methodUpper}} {{=data.method.path}}`
-
-{{? data.operation.summary && !data.options.tocSummary}}*{{= data.operation.summary }}*{{?}}
+{{? data.operation.summary && !data.options.tocSummary}}{{= data.operation.summary }}{{?}}
 
 {{? data.operation.description}}{{= data.operation.description }}{{?}}
 
 {{? data.operation.requestBody}}
-> Body parameter
+### Body parameters
 
 {{? data.bodyParameter.exampleValues.description }}
-> {{= data.bodyParameter.exampleValues.description }}
+{{= data.bodyParameter.exampleValues.description }}
 {{?}}
 
 {{= data.utils.getBodyParameterExamples(data) }}
@@ -39,6 +29,12 @@
 
 {{? data.parameters && data.parameters.length }}
 {{#def.parameters}}
+{{?}}
+
+{{? data.options.codeSamples || data.operation["x-code-samples"] }}
+### Examples
+
+{{= data.utils.getCodeSamples(data) }}
 {{?}}
 
 {{#def.responses}}
@@ -51,4 +47,3 @@
 {{??}}
 {{#def.authentication_none}}
 {{?}}
-{{= data.tags.endSection }}

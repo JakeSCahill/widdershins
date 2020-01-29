@@ -5,15 +5,14 @@
 {{~}}
 
 {{? data.responseSchemas }}
-> Example responses
+### Response examples
 
 {{= data.utils.getResponseExamples(data) }}
 {{?}}
 
-{{= data.tags.section }}
-<h3 id="{{=data.operationUniqueSlug}}-responses">Responses</h3>
+<h3 id="{{=data.operationUniqueSlug}}-responses">Response examples</h3>
 
-|Status|Meaning|Description|Schema|
+|**Status**|**Meaning**|**Description**|**Schema**|
 |---|---|---|---|
 {{~ data.responses :r}}|{{=r.status}}|{{=r.meaning}}|{{=r.description || 'none'}}|{{=r.schema}}|
 {{~}}
@@ -23,10 +22,9 @@
 {{ if (response.content && !response.$ref && !data.utils.isPrimitive(response.type)) data.responseSchemas = true; }}
 {{~}}
 {{? data.responseSchemas }}
-<h3 id="{{=data.operationUniqueSlug}}-responseschema">Response Schema</h3>
+<h3 id="{{=data.operationUniqueSlug}}-responseschema">Response examples</h3>
 {{~ data.responses :response}}
 {{? response.content && !response.$ref && !data.utils.isPrimitive(response.type)}}
-{{? Object.keys(response.content).length }}
 {{ var responseKey = Object.keys(response.content)[0]; }}
 {{ var responseSchema = response.content[responseKey].schema; }}
 {{ var enums = []; }}
@@ -46,11 +44,10 @@
 Status Code **{{=response.status}}**
 
 {{~ blocks :block}}
-{{? block.title }}*{{=block.title}}*
-{{?}}
-|Name|Type|Required|Restrictions|Description|
+|**Field**|**Type**|**Description**|
 |---|---|---|---|---|
-{{~block.rows :p}}|{{=p.displayName}}|{{=p.safeType}}|{{=p.required}}|{{=p.restrictions||'none'}}|{{=p.description||'none'}}|
+{{~block.rows :p}}|{{=p.displayName}}|{{=p.safeType}}|{{? block.title }}{{=block.title}}|
+{{?}}
 {{~}}
 {{~}}
 {{?}}
@@ -63,7 +60,6 @@ Status Code **{{=response.status}}**
 {{~ enums :e}}|{{=e.name}}|{{=data.utils.toPrimitive(e.value)}}|
 {{~}}
 
-{{?}}
 {{?}}
 
 {{ data.response = response; }}
@@ -84,4 +80,3 @@ Status Code **{{=response.status}}**
 {{~}}
 
 {{?}}
-{{= data.tags.endSection }}

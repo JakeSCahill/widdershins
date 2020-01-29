@@ -1,4 +1,3 @@
-## Widdershins Documentation
+# Nothing to see here
 
-* [Converting files using the CLI](ConvertingFilesBasicCLI.md)
-* [Converting files using the API](ConvertingFilesBasicJS.md)
+Move along.

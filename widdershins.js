@@ -5,96 +5,81 @@ const fs = require('fs');
 const path = require('path');
 const url = require('url');
 
-const yaml = require('yaml');
+const yaml = require('js-yaml');
 const fetch = require('node-fetch');
 
-const converter = require('./lib/index.js');
+const converter = require('./index.js');
 
 var argv = require('yargs')
     .usage('widdershins [options] {input-file|url} [[-o] output markdown]')
     .demand(1)
     .strict()
-    .string('abstract')
-    .alias('a','abstract')
-    .describe('abstract','The filename of the Markdown include file to use for the ReSpec abstract section.')
-    .default('abstract','./include/abstract.md')
     .boolean('code')
     .alias('c','code')
-    .describe('code','Omit generated code samples.')
+    .describe('code','Turn generic code samples off')
     .string('customApiKeyValue')
-    .describe('customApiKeyValue','Set a custom API key value to use as the API key in generated code examples.')
+    .describe('customApiKeyValue','Set a custom API key value')
     .string('includes')
     .boolean('discovery')
     .alias('d','discovery')
-    .describe('discovery','Include schema.org WebAPI discovery data.')
+    .describe('discovery','Include schema.org WebAPI discovery data')
     .string('environment')
     .alias('e','environment')
-    .describe('environment','File to load config options from.')
+    .describe('environment','Load config/override options from file')
     .boolean('expandBody')
-    .describe('expandBody','Expand the schema and show all properties in the request body.')
+    .describe('expandBody','Expand requestBody properties in parameters')
     .number('headings')
-    .describe('headings','Set the value of the `headingLevel` parameter in the header so Shins knows how many heading levels to show in the table of contents.')
+    .describe('headings','Levels of headings to expand in TOC')
     .default('headings',2)
     .boolean('httpsnippet')
     .default('httpsnippet',false)
-    .describe('httpsnippet','Use httpsnippet to generate code samples.')
-    .boolean('html')
-    .describe('html','Output html instead of Markdown; implies omitHeader.')
+    .describe('httpsnippet','Use httpsnippet to generate code samples')
     .alias('i','includes')
-    .describe('includes','List of files to put in the `include` header of the output Markdown.')
+    .describe('includes','List of files to include, comma separated')
     .boolean('lang')
     .alias('l','lang')
-    .describe('lang','Generate the list of languages for code samples based on the languages used in the source file\'s `x-code-samples` examples.')
+    .describe('lang','Automatically generate list of languages for code samples')
     .array('language_tabs')
-    .describe('language_tabs', 'List of language tabs for code samples using "language[:label[:client]]" format, such as `javascript:JavaScript:request`.')
+    .describe('language_tabs', 'List of language tabs for code samples using "language[:label[:client]]" format, for example: "javascript:JavaScript:request"')
     .number('maxLevel')
     .alias('m','maxDepth')
-    .describe('maxDepth','Maximum depth to show for schema examples.')
+    .describe('maxDepth','Maximum depth for schema examples')
     .default('maxDepth',10)
     .boolean('omitBody')
-    .describe('omitBody','Omit the body parameter from the parameters table.')
-    .boolean('omitHeader')
-    .describe('omitHeader','Omit the header / YAML front-matter in the generated Markdown file.')
+    .describe('omitBody','Omit top-level fake body parameter object')
     .string('outfile')
     .alias('o','outfile')
-    .describe('outfile','File to write the output markdown to. If left blank, Widdershins sends the output to stdout.')
+    .describe('outfile','File to write output markdown to')
     .boolean('raw')
     .alias('r','raw')
-    .describe('raw','Output raw schemas instead of example values.')
+    .describe('raw','Output raw schemas not example values')
     .boolean('resolve')
     .describe('resolve','Resolve external $refs')
-    .string('respec')
-    .describe('respec','Filename containing the ReSpec config object; implies html and omitHeader.')
     .boolean('search')
     .alias('s','search')
     .default('search',true)
-    .describe('search','Set the value of the `search` parameter in the header so Markdown processors like Shins include search or not in their output.')
+    .describe('search','Whether to enable search or not, default true')
     .boolean('shallowSchemas')
-    .describe('shallowSchemas',"When referring to a schema with a $ref, don't show the full contents of the schema.")
-    .string('sotd')
-    .describe('sotd','The filename of the markdown include file to use for the ReSpec SotD section.')
-    .default('sotd','./include/sotd.md')
+    .describe('shallowSchemas',"Don't expand schemas past $refs")
     .boolean('summary')
-    .describe('summary','Use the operation summary as the TOC entry instead of the ID.')
+    .describe('summary','Use summary instead of operationId for TOC')
     .string('theme')
     .alias('t','theme')
-    .describe('theme','Syntax-highlighter theme to use.')
-    .boolean('useBodyName')
-    .describe('useBodyName','Use original param name for OpenAPI 2.0 body parameter')
+    .describe('theme','Syntax-highlighter theme to use')
     .string('user_templates')
     .alias('u','user_templates')
-    .describe('user_templates','Directory to load override templates from.')
+    .describe('user_templates','directory to load override templates from')
     .boolean('verbose')
     .alias('v','verbose')
-    .describe('verbose','Increase verbosity.')
+    .describe('verbose','Increase verbosity')
     .boolean('experimental')
     .alias('x','experimental')
-    .describe('experimental','For backwards compatibility only; ignored.')
+    .describe('experimental','For backwards compatibility only, ignored')
     .boolean('yaml')
     .alias('y','yaml')
-    .describe('yaml','Display JSON schemas in YAML format.')
+    .describe('yaml','Display JSON schemas in YAML format')
     .help('h')
-    .alias('h','Show help.')
+    .alias('h','help')
     .version()
     .argv;
 
@@ -103,7 +88,7 @@ var options = {};
 function doit(s) {
     var api = {};
     try {
-        api = yaml.parse(s);
+        api = yaml.safeLoad(s,{json:true});
     }
     catch(ex) {
         console.error('Failed to parse YAML/JSON, falling back to API Blueprint');
@@ -159,34 +144,17 @@ options.resolve = argv.resolve;
 options.expandBody = argv.expandBody;
 options.maxDepth = argv.maxDepth;
 options.omitBody = argv.omitBody;
-options.omitHeader = argv.omitHeader;
 options.shallowSchemas = argv.shallowSchemas;
 options.yaml = argv.yaml;
 options.customApiKeyValue = argv.customApiKeyValue;
-options.html = argv.html;
-options.respec = argv.respec;
-options.useBodyName = argv.useBodyName;
 if (argv.search === false) options.search = false;
 if (argv.includes) options.includes = argv.includes.split(',');
-if (argv.respec) {
-    options.abstract = argv.abstract;
-    options.sotd = argv.sotd;
-    let r = fs.readFileSync(path.resolve(argv.respec),'utf8');
-    try {
-        options.respec = yaml.parse(r);
-    }
-    catch (ex) {
-        console.error(ex.message);
-    }
-}
-if (options.respec) options.html = true;
-if (options.html) options.omitHeader = true;
 
 if (argv.environment) {
     var e = fs.readFileSync(path.resolve(argv.environment),'utf8');
     var env = {};
     try {
-        env = yaml.parse(e);
+        env = yaml.safeLoad(e,{json:true});
     }
     catch (ex) {
         console.error(ex.message);

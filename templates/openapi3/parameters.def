@@ -1,9 +1,8 @@
-{{= data.tags.section }}
-<h3 id="{{=data.operationUniqueSlug}}-parameters">Parameters</h3>
+<h3 id="{{=data.operationUniqueSlug}}-parameters">Body parameters</h3>
 
-|Name|In|Type|Required|Description|
+|**Name**|**Type**|**Required**|**Description**|
 |---|---|---|---|---|
-{{~ data.parameters :p}}|{{=p.name}}|{{=p.in}}|{{=p.safeType}}|{{=p.required}}|{{=p.shortDesc || 'none'}}|
+{{~ data.parameters :p}}|{{=p.name}}|{{=p.safeType}}|{{=p.required}}|{{=p.shortDesc || ''}}|
 {{~}}
 
 {{? data.longDescs }}
@@ -37,4 +36,3 @@
 {{~ data.enums :e}}|{{=e.name}}|{{=data.utils.toPrimitive(e.value)}}|
 {{~}}
 {{?}}
-{{= data.tags.endSection }}

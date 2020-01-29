@@ -1,5 +1,5 @@
 const assert = require('assert');
-const common = require('../lib/common.js');
+const common = require('../common.js');
 
 describe('contentType tests',function(){
 
@@ -119,7 +119,7 @@ describe('array tests',function(){
         assert(!common.doContentType([],'json'));
     });
     it('should not match an unknown format',function(){
-        assert(!common.doContentType(['application/octet-stream'],'file'));
+        assert(!common.doContentType(['text/plain'],'text'));
     });
   });
 });

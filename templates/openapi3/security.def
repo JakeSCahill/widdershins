@@ -1,5 +1,3 @@
-{{= data.tags.section }}
-
 # Authentication
 
 {{ for (var s in data.api.components.securitySchemes) { }}
@@ -28,4 +26,3 @@
 {{?}}
 {{ } /* of securitySchemes */ }}
 
-{{= data.tags.endSection }}
